@@ -1,34 +1,65 @@
-import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import './App.css'
+import {
+  Dispatch,
+  MutableRefObject,
+  SetStateAction,
+  useRef,
+  useState,
+} from "react";
+export interface AppProps {}
 
-function App() {
-  const [count, setCount] = useState(0)
+const App: React.FC<AppProps> = () => {
+  const [time, setTime] = useState({ hr: 0, min: 0, sec: 0, ms: 0 });
+  const [isActive, setIsActive] = useState(false);
+  const intervalRef: MutableRefObject<number> | MutableRefObject<undefined> =
+    useRef();
+  const convertToTwoDigitString = (num: number) =>
+    num.toString().length > 1 ? num.toString() : "0" + num.toString();
+  const incrimentTime = () => {
+    setTime((time) => {
+      return {
+        hr: time.min === 59 ? time.hr + 1 : time.hr,
+        min: time.sec === 59 ? (time.min === 59 ? 0 : time.min + 1) : time.min,
+        sec: time.ms === 100 ? (time.sec === 59 ? 0 : time.sec + 1) : time.sec,
+        ms: time.ms === 100 ? 0 : time.ms + 1,
+      };
+    });
+    console.log(time);
+    setIsActive(true);
+  };
+
+  const resetTime = () => {};
 
   return (
-    <div className="App">
-      <div>
-        <a href="https://vitejs.dev" target="_blank">
-          <img src="/vite.svg" className="logo" alt="Vite logo" />
-        </a>
-        <a href="https://reactjs.org" target="_blank">
-          <img src={reactLogo} className="logo react" alt="React logo" />
-        </a>
+    <div className="bg-gray-800 w-screen h-screen text-gray-200 flex justify-center items-center flex-col transition-all ">
+      <div className=" bg-gray-600 rounded-3xl h-fit flex flex-col transition-all">
+        <div className="p-16 m-5 bg-gray-800 rounded-3xl text-9xl font-black transition-all">
+          <h1 className="text-center">
+            {time.hr === 0 ? "" : convertToTwoDigitString(time.hr) + ":"}
+            {convertToTwoDigitString(time.min)}:
+            {convertToTwoDigitString(time.sec)}
+          </h1>
+        </div>
+        <div className="flex justify-center items-center m-5 transition-all gap-5">
+          <button
+            className="btn"
+            onClick={() => {
+              if (isActive) {
+                clearInterval(intervalRef.current);
+                setIsActive(false);
+              } else {
+                intervalRef.current = setInterval(() => {
+                  incrimentTime();
+                });
+              }
+            }}
+          >
+            {isActive ? "Pause" : "Start"}
+          </button>
+          <button className="btn">Reset</button>
+        </div>
       </div>
-      <h1>Vite + React</h1>
-      <div className="card">
-        <button onClick={() => setCount((count) => count + 1)}>
-          count is {count}
-        </button>
-        <p>
-          Edit <code>src/App.tsx</code> and save to test HMR
-        </p>
-      </div>
-      <p className="read-the-docs">
-        Click on the Vite and React logos to learn more
-      </p>
     </div>
-  )
-}
+  );
+};
 
-export default App
+export default App;
